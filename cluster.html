@@ -1,0 +1,141 @@
+<html>
+
+<head>
+
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.5/leaflet.css" />
+	<script src="http://cdn.leafletjs.com/leaflet-0.7.5/leaflet.js"></script>
+	<link rel="stylesheet" href="https://leaflet.github.io/Leaflet.markercluster/dist/MarkerCluster.css" />
+	<link rel="stylesheet" href="https://leaflet.github.io/Leaflet.markercluster/dist/MarkerCluster.Default.css" />
+	<script src="https://leaflet.github.io/Leaflet.markercluster/dist/leaflet.markercluster-src.js"></script>
+
+	<script src="addresses.js"></script>
+</head>
+
+<body>
+
+
+	<style>
+		#map {
+			width: 100%;
+			height: 100%;
+			min-height: 100%;
+			background: red;
+			display: block;
+		}
+		
+		.fill {
+			min-height: 90%;
+			height: 90%;
+		}
+		
+		html,
+		body {
+			height: 100%;
+		}
+	</style>
+
+
+	<h2>Data Clustering</h2>
+
+	<div id="map"></div>
+
+	<script>
+		var cities = new L.LayerGroup();
+
+    var mbAttr = 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+            '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+            'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        mbUrl = 'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6IjZjNmRjNzk3ZmE2MTcwOTEwMGY0MzU3YjUzOWFmNWZhIn0.Y8bhBaUMqFiPrDRW9hieoQ';
+
+    var grayscale   = L.tileLayer(mbUrl, {id: 'mapbox.light', attribution: mbAttr}),
+        streets  = L.tileLayer(mbUrl, {id: 'mapbox.streets',   attribution: mbAttr});
+
+    var map = L.map('map', {
+        center: [37.973138,-121.37191722],
+        zoom: 10,
+        layers: [grayscale, cities]
+    });
+
+    var HERE_satelliteDay = L.tileLayer('http://{s}.{base}.maps.cit.api.here.com/maptile/2.1/maptile/{mapID}/satellite.day/{z}/{x}/{y}/256/png8?app_id={app_id}&app_code={app_code}', {
+        attribution: 'Map &copy; 1987-2014 <a href="http://developer.here.com">HERE</a>',
+        subdomains: '1234',
+        mapID: 'newest',
+        app_id: 'dTjruxTPZLYxrfSki5Da',
+        app_code: 'm6X3v0sidTp_nxONSuPXNw',
+        base: 'aerial',
+        maxZoom: 20
+    });
+    var HERE_terrainDay = L.tileLayer('http://{s}.{base}.maps.cit.api.here.com/maptile/2.1/maptile/{mapID}/terrain.day/{z}/{x}/{y}/256/png8?app_id={app_id}&app_code={app_code}', {
+	attribution: 'Map &copy; 1987-2014 <a href="http://developer.here.com">HERE</a>',
+	subdomains: '1234',
+	mapID: 'newest',
+	app_id: 'dTjruxTPZLYxrfSki5Da',
+	app_code: 'm6X3v0sidTp_nxONSuPXNw',
+	base: 'aerial',
+	maxZoom: 20
+});
+
+var MapQuestOpen_Aerial = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/{type}/{z}/{x}/{y}.{ext}', {
+	type: 'sat',
+	ext: 'jpg',
+	attribution: 'Tiles Courtesy of <a href="http://www.mapquest.com/">MapQuest</a> &mdash; Portions Courtesy NASA/JPL-Caltech and U.S. Depart. of Agriculture, Farm Service Agency',
+	subdomains: '1234'
+});
+
+// https: also suppported.
+var Esri_WorldImagery = L.tileLayer('http://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+});
+
+var OpenTopoMap = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+	maxZoom: 16,
+	attribution: 'Map data: &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+});
+
+    var baseLayers = {
+        "Grayscale": grayscale,
+        "Streets": streets,
+        "HERE_satelliteDay":HERE_satelliteDay,
+        "HERE_terrainDay":HERE_terrainDay,
+        "MapQuestOpen_Aerial":MapQuestOpen_Aerial,
+        "Esri_WorldImagery":Esri_WorldImagery,
+        "Open TOPO":OpenTopoMap
+    };
+
+    var OpenMapSurfer_AdminBounds = L.tileLayer('http://openmapsurfer.uni-hd.de/tiles/adminb/x={x}&y={y}&z={z}', {
+	   maxZoom: 19,
+	   attribution: 'Imagery from <a href="http://giscience.uni-hd.de/">GIScience Research Group  University of Heidelberg</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    });
+
+var Stamen_TopOSMFeatures = L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toposm-features/{z}/{x}/{y}.{ext}', {
+	subdomains: 'abcd',
+	minZoom: 0,
+	maxZoom: 20,
+	ext: 'png',
+	bounds: [[22, -132], [51, -56]],
+	opacity: 0.9
+});
+
+    var overlays = {
+        "Admin":OpenMapSurfer_AdminBounds,
+        "OSM Features":Stamen_TopOSMFeatures
+    };
+
+    L.control.layers(baseLayers, overlays).addTo(map);
+
+        var markers = L.markerClusterGroup();
+		for (var i = 0; i < addressPoints.length; i++) {
+			var a = addressPoints[i];
+			var title = a[2];
+			var marker = L.marker(new L.LatLng(a[0], a[1]), { title: title });
+			marker.bindPopup(title);
+			markers.addLayer(marker);
+		}
+
+		map.addLayer(markers);
+
+	</script>
+
+</body>
+
+</html>
